@@ -1,0 +1,209 @@
+/* ============================================================
+   ERIAD — Foundational tokens
+   90% neutral · 10% accent · no gradients · no shadows
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* ---------- Color: base ---------- */
+  --ink:        #0E0E10;   /* off-black, warmer than pure */
+  --paper:      #FAFAF7;   /* paper white, slight warmth */
+  --mid:        #6B6B70;   /* secondary text */
+
+  /* Tonal steps derived from paper/ink — for hairlines, subtle fills */
+  --paper-2:    #F2F2EE;   /* subtle surface */
+  --paper-3:    #E8E8E3;   /* hairline on paper */
+  --ink-2:      #1A1A1D;   /* raised surface on dark */
+  --ink-3:      #2A2A2E;   /* hairline on ink */
+
+  /* ---------- Color: accent ---------- */
+  /* Single accent. Lavender is primary; slate is reserved for editorial/data. */
+  --lavender:   #B8B0D6;
+  --slate:      #4A5568;
+
+  /* ---------- Semantic — light (default) ---------- */
+  --bg:         var(--paper);
+  --bg-raised:  var(--paper-2);
+  --fg:         var(--ink);
+  --fg-2:       var(--mid);
+  --fg-3:       #9A9A9E;
+  --rule:       var(--paper-3);
+  --accent:     var(--lavender);
+
+  /* ---------- Type ---------- */
+  --font-display: 'Inter Tight', 'Söhne', 'ABC Diatype', 'Neue Haas Grotesk', system-ui, sans-serif;
+  --font-body:    'Inter Tight', 'Söhne', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', 'Söhne Mono', ui-monospace, monospace;
+
+  /* Scale — large, quiet */
+  --fs-display:  clamp(64px, 9vw, 120px);
+  --fs-h1:       clamp(44px, 5.5vw, 72px);
+  --fs-h2:       clamp(32px, 3.5vw, 48px);
+  --fs-h3:       24px;
+  --fs-body:     17px;
+  --fs-body-lg:  19px;
+  --fs-small:    14px;
+  --fs-micro:    11px;   /* uppercase labels only */
+
+  --lh-tight:    1.02;
+  --lh-snug:     1.2;
+  --lh-body:     1.55;
+
+  --track-tight: -0.02em;   /* -2% for display */
+  --track-h:     -0.015em;
+  --track-body:  -0.005em;
+  --track-micro: 0.08em;    /* +8% for micro caps */
+
+  /* ---------- Spacing (8pt base, generous) ---------- */
+  --s-1:  4px;
+  --s-2:  8px;
+  --s-3:  16px;
+  --s-4:  24px;
+  --s-5:  32px;
+  --s-6:  48px;
+  --s-7:  64px;
+  --s-8:  96px;
+  --s-9:  160px;
+  --s-10: 240px;
+
+  /* ---------- Layout ---------- */
+  --col-gutter: 32px;
+  --col-gutter-lg: 48px;
+  --margin:     clamp(24px, 6vw, 96px);
+  --measure:    64ch;
+
+  /* ---------- Geometry ---------- */
+  --radius:     0px;     /* near-zero — closer to print */
+  --radius-sm:  2px;     /* rare, inputs only */
+  --hairline:   1px;
+
+  /* ---------- Motion ---------- */
+  --ease:       cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast:   300ms;
+  --dur:        400ms;
+  --dur-slow:   600ms;
+}
+
+/* ---------- Dark mode — first-class ---------- */
+:root[data-theme="dark"],
+[data-theme="dark"] {
+  --bg:         var(--ink);
+  --bg-raised:  var(--ink-2);
+  --fg:         var(--paper);
+  --fg-2:       #A0A0A4;
+  --fg-3:       #6B6B70;
+  --rule:       var(--ink-3);
+  --accent:     var(--lavender);
+}
+
+/* ============================================================
+   Element defaults
+   ============================================================ */
+html, body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: var(--lh-body);
+  letter-spacing: var(--track-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "ss01", "cv11";
+}
+
+.display, h1.display {
+  font-family: var(--font-display);
+  font-size: var(--fs-display);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  font-weight: 400;
+}
+
+h1 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-tight);
+  font-weight: 400;
+  margin: 0;
+}
+
+h2 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-h);
+  font-weight: 400;
+  margin: 0;
+}
+
+h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  line-height: var(--lh-snug);
+  letter-spacing: var(--track-h);
+  font-weight: 500;
+  margin: 0;
+}
+
+p {
+  margin: 0 0 1em;
+  max-width: var(--measure);
+}
+
+small, .small { font-size: var(--fs-small); color: var(--fg-2); }
+
+.micro, .eyebrow {
+  font-family: var(--font-display);
+  font-size: var(--fs-micro);
+  text-transform: uppercase;
+  letter-spacing: var(--track-micro);
+  font-weight: 500;
+  color: var(--fg-2);
+}
+
+code, .mono, pre {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  letter-spacing: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: var(--hairline) solid transparent;
+  transition: border-color var(--dur-fast) var(--ease),
+              opacity var(--dur-fast) var(--ease);
+}
+a:hover { border-bottom-color: currentColor; }
+
+/* Link-style call (arrow link) — hero pattern */
+.link-arrow {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4em;
+  font-weight: 500;
+  border-bottom: none;
+}
+.link-arrow .arrow { transition: transform var(--dur) var(--ease); }
+.link-arrow:hover .arrow { transform: translateX(4px); }
+
+hr, .rule {
+  border: none;
+  border-top: var(--hairline) solid var(--rule);
+  margin: var(--s-6) 0;
+}
+
+/* Numbered section label — "01 / Discovery" */
+.numbered {
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--fg-2);
+  letter-spacing: 0;
+}
+.numbered .n { color: var(--fg); }
+
+/* Utility */
+.stack > * + * { margin-top: var(--s-3); }
+.stack-lg > * + * { margin-top: var(--s-5); }

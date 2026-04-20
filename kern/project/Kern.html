@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kern — mobile design</title>
+<link rel="stylesheet" href="eriad/colors_and_type.css">
+<link rel="stylesheet" href="kern/kern.css">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #f0eee9; }
+  /* Hide the blinking caret in focus-mode editor screens for cleanliness */
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="android-frame.jsx"></script>
+
+<script type="text/babel" src="kern/screens-shared.jsx"></script>
+<script type="text/babel" src="kern/screen-list.jsx"></script>
+<script type="text/babel" src="kern/screen-editor.jsx"></script>
+<script type="text/babel" src="kern/screen-settings.jsx"></script>
+
+<script type="text/babel">
+// ────────────────────────────────────────────────────────────
+// Tweaks — persistable
+// ────────────────────────────────────────────────────────────
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "showSideBySide": true,
+  "editorFont": "mono",
+  "cursorColor": "#B8B0D6"
+}/*EDITMODE-END*/;
+
+// ────────────────────────────────────────────────────────────
+// Tiny device wrappers that apply the ERIAD tokens + theme attr
+// ────────────────────────────────────────────────────────────
+function IOSKernScreen({ children, dark, title }) {
+  return (
+    <IOSDevice dark={dark} title={undefined} width={390} height={820}>
+      <div data-theme={dark ? 'dark' : 'light'} style={{ height: '100%', background: dark ? '#0E0E10' : '#FAFAF7' }}>
+        {/* preserve space behind status bar */}
+        <div style={{ height: 54 }} />
+        {children}
+      </div>
+    </IOSDevice>
+  );
+}
+
+function AndroidKernScreen({ children, dark }) {
+  // Override the Android frame's minty bg — we want ERIAD paper / ink.
+  return (
+    <div data-theme={dark ? 'dark' : 'light'} style={{
+      width: 390, height: 820, borderRadius: 18, overflow: 'hidden',
+      background: dark ? '#0E0E10' : '#FAFAF7',
+      border: `8px solid ${dark ? '#2a2a2e' : 'rgba(116,119,117,0.5)'}`,
+      boxShadow: '0 30px 80px rgba(0,0,0,0.25)',
+      display: 'flex', flexDirection: 'column', boxSizing: 'border-box',
+      position: 'relative',
+    }}>
+      {/* Android-ish status bar (simplified, themed) */}
+      <div style={{
+        height: 36, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '0 18px', flexShrink: 0,
+        fontFamily: 'Roboto, system-ui', fontSize: 13, color: dark ? '#fff' : '#0E0E10',
+        position: 'relative',
+      }}>
+        <span>9:30</span>
+        <div style={{
+          position: 'absolute', left: '50%', top: 8, transform: 'translateX(-50%)',
+          width: 18, height: 18, borderRadius: 100, background: '#2e2e2e',
+        }} />
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          <svg width="14" height="14" viewBox="0 0 16 16"><path d="M8 13.3L.67 5.97a10.37 10.37 0 0114.66 0L8 13.3z" fill="currentColor"/></svg>
+          <svg width="14" height="14" viewBox="0 0 16 16"><rect x="3.75" y="2" width="8.5" height="13" rx="1.5" fill="currentColor"/><rect x="5.5" y="0.9" width="5" height="2" rx="0.5" fill="currentColor"/></svg>
+        </div>
+      </div>
+      <div style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {children}
+      </div>
+      <div style={{ height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <div style={{
+          width: 108, height: 3, borderRadius: 2,
+          background: dark ? '#fff' : '#0E0E10', opacity: 0.4,
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Hero — editorial title page for the canvas
+// ────────────────────────────────────────────────────────────
+function Hero() {
+  return (
+    <div style={{
+      width: 1760, background: '#FAFAF7', color: '#0E0E10',
+      padding: '80px 80px 72px',
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      border: '1px solid rgba(0,0,0,0.08)',
+      position: 'relative',
+    }}>
+      {/* top meta row */}
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        paddingBottom: 24, borderBottom: '1px solid rgba(0,0,0,0.12)',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+        textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70',
+      }}>
+        <span><span style={{ color: '#0E0E10' }}>kern</span>&nbsp;·&nbsp;mobile design spec</span>
+        <span>volume 01 / spring 2026</span>
+        <span>18 artboards</span>
+      </div>
+
+      {/* display title */}
+      <div style={{ padding: '64px 0 56px', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: 68, right: 0, width: 10, height: 10,
+          background: '#B8B0D6',
+        }} />
+        <h1 style={{
+          margin: 0, fontSize: 148, fontWeight: 400, letterSpacing: '-0.035em',
+          lineHeight: 0.95,
+        }}>
+          typography<br/>
+          <span style={{ color: '#6B6B70' }}>is the</span> interface.
+        </h1>
+      </div>
+
+      {/* three-column sub-grid */}
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: 48,
+        paddingTop: 32, borderTop: '1px solid rgba(0,0,0,0.12)',
+      }}>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>brief</div>
+          <p style={{ fontSize: 17, lineHeight: 1.5, margin: 0, maxWidth: 'none', color: '#0E0E10' }}>
+            kern is a notes app where the editor is the product. no chrome, no cloud, no icons where a label will do. notes live on device as plain <code style={{ fontFamily: 'JetBrains Mono', fontSize: 14, background: '#F2F2EE', padding: '1px 5px' }}>.md</code> files.
+          </p>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>type</div>
+          <div style={{ fontSize: 15, lineHeight: 1.45 }}>
+            <div><span style={{ color: '#6B6B70' }}>display</span>&nbsp;&nbsp;Inter Tight</div>
+            <div><span style={{ color: '#6B6B70' }}>body</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Inter Tight</div>
+            <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, marginTop: 6 }}><span style={{ color: '#6B6B70' }}>mono</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;JetBrains Mono</div>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>palette</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <div style={{ width: 28, height: 28, background: '#0E0E10', border: '1px solid rgba(0,0,0,0.1)' }} />
+            <div style={{ width: 28, height: 28, background: '#FAFAF7', border: '1px solid rgba(0,0,0,0.15)' }} />
+            <div style={{ width: 28, height: 28, background: '#6B6B70' }} />
+            <div style={{ width: 28, height: 28, background: '#B8B0D6' }} />
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: '#6B6B70', letterSpacing: 0 }}>
+            ink · paper · mid · lavender
+          </div>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>dimensions</div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, lineHeight: 1.6 }}>
+            <div>390 × 820</div>
+            <div>ios 17 · android 14</div>
+            <div>light + dark</div>
+            <div>cursor <span style={{ color: '#B8B0D6' }}>■</span> #B8B0D6</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Specimen / pull-quote — ERIAD pattern, two-column display
+// ────────────────────────────────────────────────────────────
+function PullQuote() {
+  return (
+    <div style={{
+      width: 1760, background: '#0E0E10', color: '#FAFAF7',
+      padding: '120px 80px',
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      display: 'grid', gridTemplateColumns: '1fr 2.4fr', gap: 80,
+      alignItems: 'start',
+    }}>
+      <div>
+        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#B8B0D6', marginBottom: 16 }}>
+          02 / manifesto
+        </div>
+        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 12, color: '#9A9A9E', lineHeight: 1.6, letterSpacing: 0 }}>
+          kern takes its name from the gap<br/>
+          between two letters — and the quiet<br/>
+          work of closing it.
+        </div>
+      </div>
+      <div style={{
+        fontSize: 72, fontWeight: 400, letterSpacing: '-0.025em',
+        lineHeight: 1.05, margin: 0,
+      }}>
+        the editor is the app. a blinking <span style={{ color: '#B8B0D6' }}>cursor</span>, a monospaced line, and the sentence you are writing now — dimmed out, is every other sentence.
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Type specimen — big letterform, caption
+// ────────────────────────────────────────────────────────────
+function TypeSpecimen() {
+  return (
+    <div style={{
+      width: 860, height: 520, background: '#FAFAF7', color: '#0E0E10',
+      border: '1px solid rgba(0,0,0,0.08)',
+      padding: 0, position: 'relative',
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '24px 32px 0', fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70' }}>
+        <span>specimen · 01</span>
+        <span>inter tight · 520pt</span>
+      </div>
+      <div style={{
+        fontSize: 520, fontWeight: 400, letterSpacing: '-0.06em',
+        lineHeight: 0.85, textAlign: 'center', margin: 0,
+        marginTop: -40,
+      }}>Kk</div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 32px 24px', fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70' }}>
+        <span>K — ink #0E0E10</span>
+        <span>tracking −2%</span>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Markdown specimen — visible syntax card, mirrors editor rendering
+// ────────────────────────────────────────────────────────────
+function MarkdownSpecimen() {
+  const src = [
+    '# a sentence, set simply.',
+    '',
+    'here is **bold**. here is _italic_. here is `code`.',
+    '',
+    '> the marks stay visible, so the writing does not lie about itself.',
+    '',
+    '- [x] rendered',
+    '- [ ] unfinished',
+  ].join('\n');
+  return (
+    <div className="kern" data-theme="light" style={{
+      width: 860, height: 520, background: '#FAFAF7', color: '#0E0E10',
+      border: '1px solid rgba(0,0,0,0.08)',
+      padding: '36px 48px', position: 'relative',
+      display: 'flex', flexDirection: 'column',
+    }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 24 }}>
+        <span>specimen · 02</span>
+        <span>live markdown · visible syntax</span>
+      </div>
+      <div style={{ flex: 1 }}>
+        <MarkdownBody source={src} />
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginTop: 24 }}>
+        <span>marks in mid-grey</span>
+        <span>content in ink</span>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Section number marker — big editorial numeral
+// ────────────────────────────────────────────────────────────
+function SectionMark({ n, title, subtitle, accent = false }) {
+  return (
+    <div style={{
+      padding: '80px 60px 40px',
+      display: 'flex', alignItems: 'baseline', gap: 48,
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      borderTop: '1px solid rgba(0,0,0,0.15)',
+      margin: '0 60px',
+      width: 1760 - 120,
+      boxSizing: 'border-box',
+    }}>
+      <div style={{
+        fontSize: 180, fontWeight: 400, letterSpacing: '-0.04em',
+        lineHeight: 0.9, color: accent ? '#B8B0D6' : '#0E0E10',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{n}</div>
+      <div style={{ flex: 1, paddingBottom: 24 }}>
+        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 12 }}>
+          section {n}
+        </div>
+        <div style={{ fontSize: 56, fontWeight: 400, letterSpacing: '-0.025em', lineHeight: 1 }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{ fontSize: 17, lineHeight: 1.5, color: '#6B6B70', marginTop: 16, maxWidth: 600 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Root — canvas with sections of artboards
+// ────────────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAKS);
+  const [editMode, setEditMode] = React.useState(false);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const d = e.data || {};
+      if (d.type === '__activate_edit_mode') setEditMode(true);
+      if (d.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const updateTweak = (k, v) => {
+    setTweaks(t => {
+      const next = { ...t, [k]: v };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+      return next;
+    });
+  };
+
+  const dark = tweaks.theme === 'dark';
+
+  // ios row
+  const iosRow = (label, node, key) => (
+    <DCArtboard key={key} label={label} width={390} height={820} style={{ borderRadius: 48, background: 'transparent', boxShadow: 'none' }}>
+      {node}
+    </DCArtboard>
+  );
+  const andRow = (label, node, key) => (
+    <DCArtboard key={key} label={label} width={390} height={820} style={{ borderRadius: 18, background: 'transparent', boxShadow: 'none' }}>
+      {node}
+    </DCArtboard>
+  );
+
+  return (
+    <>
+      <DesignCanvas>
+        {/* Hero */}
+        <div style={{ padding: '0 60px 40px' }}>
+          <Hero />
+        </div>
+
+        {/* Specimen row */}
+        <div style={{ padding: '0 60px 80px', display: 'flex', gap: 40 }}>
+          <TypeSpecimen />
+          <MarkdownSpecimen />
+        </div>
+
+        {/* Pull quote */}
+        <div style={{ padding: '0 60px 40px' }}>
+          <PullQuote />
+        </div>
+
+        <SectionMark n="03" title="library, editor, focus." subtitle="the whole product, on ios, in paper. six screens — the heart of the spec." />
+
+        {/* ─── iOS · Light ─── */}
+        <DCSection title="iOS — light" subtitle="iPhone 15 · 390 × 820 · ERIAD paper #FAFAF7">
+          {iosRow('01 / library', <IOSKernScreen dark={false}><KernListScreen dark={false} /></IOSKernScreen>, 'il-1')}
+          {iosRow('02 / editor', <IOSKernScreen dark={false}><KernEditorScreen dark={false} /></IOSKernScreen>, 'il-2')}
+          {iosRow('03 / editor · focus', <IOSKernScreen dark={false}><KernEditorScreen dark={false} focus /></IOSKernScreen>, 'il-3')}
+          {iosRow('04 / info panel', <IOSKernScreen dark={false}><KernEditorScreen dark={false} infoPanel /></IOSKernScreen>, 'il-4')}
+          {iosRow('05 / sidebar', <IOSKernScreen dark={false}><KernSidebarScreen dark={false} /></IOSKernScreen>, 'il-5')}
+          {iosRow('06 / settings', <IOSKernScreen dark={false}><KernSettingsScreen dark={false} /></IOSKernScreen>, 'il-6')}
+        </DCSection>
+
+        <SectionMark n="04" title="the same, at night." subtitle="ink #0E0E10. lavender cursor holds the 10% accent; nothing else competes." accent />
+
+        {/* ─── iOS · Dark ─── */}
+        <DCSection title="iOS — dark">
+          {iosRow('07 / library', <IOSKernScreen dark><KernListScreen dark /></IOSKernScreen>, 'id-1')}
+          {iosRow('08 / editor', <IOSKernScreen dark><KernEditorScreen dark /></IOSKernScreen>, 'id-2')}
+          {iosRow('09 / editor · focus', <IOSKernScreen dark><KernEditorScreen dark focus /></IOSKernScreen>, 'id-3')}
+          {iosRow('10 / info panel', <IOSKernScreen dark><KernEditorScreen dark infoPanel /></IOSKernScreen>, 'id-4')}
+        </DCSection>
+
+        <SectionMark n="05" title="android, same voice." subtitle="material 3 chrome, eriad interior. paper wins over minty surface; the product reads identically across platforms." />
+
+        {/* ─── Android · Light ─── */}
+        <DCSection title="Android — light">
+          {andRow('11 / library', <AndroidKernScreen dark={false}><KernListScreen dark={false} /></AndroidKernScreen>, 'al-1')}
+          {andRow('12 / editor', <AndroidKernScreen dark={false}><KernEditorScreen dark={false} /></AndroidKernScreen>, 'al-2')}
+          {andRow('13 / editor · focus', <AndroidKernScreen dark={false}><KernEditorScreen dark={false} focus /></AndroidKernScreen>, 'al-3')}
+          {andRow('14 / sidebar', <AndroidKernScreen dark={false}><KernSidebarScreen dark={false} /></AndroidKernScreen>, 'al-4')}
+          {andRow('15 / settings', <AndroidKernScreen dark={false}><KernSettingsScreen dark={false} /></AndroidKernScreen>, 'al-5')}
+        </DCSection>
+
+        {/* ─── Android · Dark ─── */}
+        <DCSection title="Android — dark">
+          {andRow('16 / library', <AndroidKernScreen dark><KernListScreen dark /></AndroidKernScreen>, 'ad-1')}
+          {andRow('17 / editor · focus', <AndroidKernScreen dark><KernEditorScreen dark focus /></AndroidKernScreen>, 'ad-2')}
+          {andRow('18 / info panel', <AndroidKernScreen dark><KernEditorScreen dark infoPanel /></AndroidKernScreen>, 'ad-3')}
+        </DCSection>
+
+        {/* Post-its — designer's notes */}
+        <DCPostIt top={40} left={1820} rotate={-3} width={200}>
+          cursor is the <b>one</b> use of lavender. everything else is ink / paper / mid-grey.
+        </DCPostIt>
+        <DCPostIt top={1760} right={40} rotate={2} width={210}>
+          focus mode = sentence, not paragraph. reads more intentional on mobile.
+        </DCPostIt>
+        <DCPostIt top={2800} left={20} rotate={-2} width={200}>
+          seed notes are real writing — essays, meeting notes, fragments. not lorem.
+        </DCPostIt>
+
+      </DesignCanvas>
+
+      {/* Tweaks panel */}
+      {editMode && (
+        <div style={{
+          position: 'fixed', right: 20, bottom: 20, zIndex: 9999,
+          background: '#FAFAF7', color: '#0E0E10',
+          border: '1px solid rgba(0,0,0,0.12)',
+          padding: '20px 24px 22px',
+          fontFamily: "'Inter Tight', system-ui",
+          fontSize: 14,
+          width: 280,
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+        }}>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 16 }}>tweaks</div>
+
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 12, color: '#6B6B70', marginBottom: 6 }}>theme (manifesto + tweak default)</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {['light', 'dark'].map(v => (
+                <button key={v} onClick={() => updateTweak('theme', v)} style={{
+                  padding: '5px 12px', background: tweaks.theme === v ? '#0E0E10' : 'transparent',
+                  color: tweaks.theme === v ? '#FAFAF7' : '#0E0E10',
+                  border: '1px solid #0E0E10', fontFamily: 'JetBrains Mono', fontSize: 12,
+                  cursor: 'pointer', borderRadius: 0,
+                }}>{v}</button>
+              ))}
+            </div>
+            <div style={{ fontSize: 11, color: '#9A9A9E', marginTop: 6 }}>
+              both themes are already shown on the canvas; this just flips the manifesto card.
+            </div>
+          </div>
+
+          <div style={{ marginBottom: 6 }}>
+            <div style={{ fontSize: 12, color: '#6B6B70', marginBottom: 6 }}>cursor color</div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[
+                { k: '#B8B0D6', label: 'lavender' },
+                { k: '#0057FF', label: 'electric' },
+                { k: '#0E0E10', label: 'ink' },
+              ].map(c => (
+                <button key={c.k} onClick={() => updateTweak('cursorColor', c.k)} style={{
+                  padding: '5px 10px', background: tweaks.cursorColor === c.k ? '#0E0E10' : 'transparent',
+                  color: tweaks.cursorColor === c.k ? '#FAFAF7' : '#0E0E10',
+                  border: '1px solid #0E0E10', fontFamily: 'JetBrains Mono', fontSize: 12,
+                  cursor: 'pointer', borderRadius: 0,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <span style={{ display: 'inline-block', width: 10, height: 10, background: c.k, border: '1px solid rgba(0,0,0,0.2)' }} />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Apply cursor-color tweak globally */}
+      <style>{`
+        .kern { --cursor: ${tweaks.cursorColor}; --accent: ${tweaks.cursorColor}; }
+      `}</style>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

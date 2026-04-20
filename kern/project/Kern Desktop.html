@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kern — desktop (macOS)</title>
+<link rel="stylesheet" href="eriad/colors_and_type.css">
+<link rel="stylesheet" href="kern/kern.css">
+<link rel="stylesheet" href="kern/kern-desktop.css">
+<style>
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #f0eee9; }
+  * { box-sizing: border-box; }
+</style>
+</head>
+<body>
+
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="kern/screens-shared.jsx"></script>
+<script type="text/babel" src="kern/screen-desktop.jsx"></script>
+
+<script type="text/babel">
+// ────────────────────────────────────────────────────────────
+// Tweaks
+// ────────────────────────────────────────────────────────────
+const TWEAKS = /*EDITMODE-BEGIN*/{
+  "theme": "light",
+  "cursorColor": "#B8B0D6",
+  "showSidebar": true,
+  "density": "comfortable"
+}/*EDITMODE-END*/;
+
+// ────────────────────────────────────────────────────────────
+// Hero — editorial title for the desktop spec
+// ────────────────────────────────────────────────────────────
+function Hero() {
+  return (
+    <div style={{
+      width: 1840, background: '#FAFAF7', color: '#0E0E10',
+      padding: '80px 80px 72px',
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      border: '1px solid rgba(0,0,0,0.08)',
+      position: 'relative',
+    }}>
+      <div style={{
+        display: 'flex', justifyContent: 'space-between', alignItems: 'baseline',
+        paddingBottom: 24, borderBottom: '1px solid rgba(0,0,0,0.12)',
+        fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
+        textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70',
+      }}>
+        <span><span style={{ color: '#0E0E10' }}>kern</span>&nbsp;·&nbsp;desktop · macos</span>
+        <span>volume 02 / build target</span>
+        <span>six artboards</span>
+      </div>
+
+      <div style={{ padding: '64px 0 56px', position: 'relative' }}>
+        <div style={{
+          position: 'absolute', top: 68, right: 0, width: 10, height: 10,
+          background: '#B8B0D6',
+        }} />
+        <h1 style={{
+          margin: 0, fontSize: 148, fontWeight: 400, letterSpacing: '-0.035em',
+          lineHeight: 0.95,
+        }}>
+          three panes,<br/>
+          <span style={{ color: '#6B6B70' }}>one</span> sentence.
+        </h1>
+      </div>
+
+      <div style={{
+        display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr 1fr', gap: 48,
+        paddingTop: 32, borderTop: '1px solid rgba(0,0,0,0.12)',
+      }}>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>brief</div>
+          <p style={{ fontSize: 17, lineHeight: 1.5, margin: 0, maxWidth: 'none', color: '#0E0E10' }}>
+            the desktop build target. <strong>tags · list · editor</strong> on a single canvas. no menus you do not need. the editor is still the app — just wider, with the library permanently in view. notes live on disk as <code style={{ fontFamily: 'JetBrains Mono', fontSize: 14, background: '#F2F2EE', padding: '1px 5px' }}>~/Notes/*.md</code>.
+          </p>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>layout</div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, lineHeight: 1.6, letterSpacing: 0 }}>
+            <div>220&nbsp;&nbsp; tags + pinned</div>
+            <div>340&nbsp;&nbsp; note list</div>
+            <div>rest&nbsp; editor</div>
+            <div style={{ color: '#6B6B70', marginTop: 4 }}>1280 × 800 default</div>
+          </div>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>palette</div>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+            <div style={{ width: 28, height: 28, background: '#0E0E10', border: '1px solid rgba(0,0,0,0.1)' }} />
+            <div style={{ width: 28, height: 28, background: '#FAFAF7', border: '1px solid rgba(0,0,0,0.15)' }} />
+            <div style={{ width: 28, height: 28, background: '#6B6B70' }} />
+            <div style={{ width: 28, height: 28, background: '#B8B0D6' }} />
+          </div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, color: '#6B6B70', letterSpacing: 0 }}>
+            ink · paper · mid · lavender
+          </div>
+        </div>
+        <div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 10 }}>chrome</div>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 13, lineHeight: 1.6 }}>
+            <div>traffic lights only</div>
+            <div>no toolbar ribbon</div>
+            <div>hairline dividers</div>
+            <div>cursor <span style={{ color: '#B8B0D6' }}>■</span> #B8B0D6</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// Section marker (editorial numeral)
+// ────────────────────────────────────────────────────────────
+function SectionMark({ n, title, subtitle, accent = false }) {
+  return (
+    <div style={{
+      padding: '80px 60px 40px',
+      display: 'flex', alignItems: 'baseline', gap: 48,
+      fontFamily: "'Inter Tight', system-ui, sans-serif",
+      borderTop: '1px solid rgba(0,0,0,0.15)',
+      margin: '0 60px',
+      width: 1840 - 120,
+      boxSizing: 'border-box',
+    }}>
+      <div style={{
+        fontSize: 180, fontWeight: 400, letterSpacing: '-0.04em',
+        lineHeight: 0.9, color: accent ? '#B8B0D6' : '#0E0E10',
+        fontVariantNumeric: 'tabular-nums',
+      }}>{n}</div>
+      <div style={{ flex: 1, paddingBottom: 24 }}>
+        <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 12 }}>
+          section {n}
+        </div>
+        <div style={{ fontSize: 56, fontWeight: 400, letterSpacing: '-0.025em', lineHeight: 1 }}>
+          {title}
+        </div>
+        {subtitle && (
+          <div style={{ fontSize: 17, lineHeight: 1.5, color: '#6B6B70', marginTop: 16, maxWidth: 600 }}>
+            {subtitle}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ────────────────────────────────────────────────────────────
+// App
+// ────────────────────────────────────────────────────────────
+function App() {
+  const [tweaks, setTweaks] = React.useState(TWEAKS);
+  const [editMode, setEditMode] = React.useState(false);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      const d = e.data || {};
+      if (d.type === '__activate_edit_mode') setEditMode(true);
+      if (d.type === '__deactivate_edit_mode') setEditMode(false);
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const updateTweak = (k, v) => {
+    setTweaks(t => {
+      const next = { ...t, [k]: v };
+      window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+      return next;
+    });
+  };
+
+  const board = (label, node, key, w = 1280, h = 800) => (
+    <DCArtboard key={key} label={label} width={w} height={h} style={{ background: 'transparent', boxShadow: 'none', borderRadius: 10 }}>
+      {node}
+    </DCArtboard>
+  );
+
+  const notes = window.KERN_NOTES;
+  const rates = notes.find(n => n.id === 'n-rates');
+  const atlas = notes.find(n => n.id === 'n-hl7');
+  const studio = notes.find(n => n.id === 'n-studio');
+
+  return (
+    <>
+      <DesignCanvas width={1960}>
+        <div style={{ padding: '0 60px 40px' }}>
+          <Hero />
+        </div>
+
+        <SectionMark n="01" title="the default view." subtitle="opened fresh. the library on the left, the most recent note on the right. no empty state — there is always something to come back to." />
+
+        <DCSection title="default — light">
+          {board('01 / library + editor · light',
+            <KernMacWindow width={1280} height={800}>
+              <KernDesktop dark={false} note={rates} selectedId="n-rates" />
+            </KernMacWindow>,
+            'd1'
+          )}
+        </DCSection>
+
+        <SectionMark n="02" title="focus, wider." subtitle="on desktop, focus mode leans harder — the two left panes dim too, not just the surrounding text. the sentence is all there is." accent />
+
+        <DCSection title="focus mode · light">
+          {board('02 / focus · sentence',
+            <KernMacWindow width={1280} height={800}>
+              <KernDesktop dark={false} note={rates} selectedId="n-rates" focus />
+            </KernMacWindow>,
+            'd2'
+          )}
+        </DCSection>
+
+        <SectionMark n="03" title="info, as a sheet from the right." subtitle="word count, reading time, and the table of contents generated from h1–h4. slides over the editor, does not push it." />
+
+        <DCSection title="info panel · light">
+          {board('03 / info panel',
+            <KernMacWindow width={1280} height={800}>
+              <KernDesktop dark={false} note={atlas} selectedId="n-hl7" infoPanel />
+            </KernMacWindow>,
+            'd3'
+          )}
+        </DCSection>
+
+        <SectionMark n="04" title="the same, at night." subtitle="ink #0E0E10, hairlines at #2A2A2E. the lavender cursor and the pinned dot are the only color in the whole window." />
+
+        <DCSection title="dark theme">
+          {board('04 / default · dark',
+            <KernMacWindow width={1280} height={800} dark>
+              <KernDesktop dark note={studio} selectedId="n-studio" />
+            </KernMacWindow>,
+            'd4'
+          )}
+          {board('05 / focus · dark',
+            <KernMacWindow width={1280} height={800} dark>
+              <KernDesktop dark note={rates} selectedId="n-rates" focus />
+            </KernMacWindow>,
+            'd5'
+          )}
+        </DCSection>
+
+        <SectionMark n="05" title="at 1600." subtitle="the wider the window, the wider the measure. everything else holds: two fixed rails on the left, generous editor on the right." />
+
+        <DCSection title="wide canvas · 1600 × 900">
+          {board('06 / wide',
+            <KernMacWindow width={1600} height={900}>
+              <KernDesktop dark={false} note={atlas} selectedId="n-hl7" />
+            </KernMacWindow>,
+            'd6', 1600, 900
+          )}
+        </DCSection>
+
+        {/* designer post-its */}
+        <DCPostIt top={120} left={1880} rotate={-3} width={200}>
+          build target. ship desktop first — the dogfooding loop is tighter on keyboard.
+        </DCPostIt>
+        <DCPostIt top={1860} right={40} rotate={2} width={220}>
+          traffic lights live inside the tag rail, not on a separate titlebar. saves 36 vertical pixels.
+        </DCPostIt>
+        <DCPostIt top={3500} left={20} rotate={-2} width={210}>
+          info panel slides in; it does not resize the editor. the measure never jumps while you read.
+        </DCPostIt>
+
+      </DesignCanvas>
+
+      {editMode && (
+        <div style={{
+          position: 'fixed', right: 20, bottom: 20, zIndex: 9999,
+          background: '#FAFAF7', color: '#0E0E10',
+          border: '1px solid rgba(0,0,0,0.12)',
+          padding: '20px 24px 22px',
+          fontFamily: "'Inter Tight', system-ui",
+          fontSize: 14, width: 280,
+          boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
+        }}>
+          <div style={{ fontFamily: 'JetBrains Mono', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#6B6B70', marginBottom: 16 }}>tweaks</div>
+
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 12, color: '#6B6B70', marginBottom: 6 }}>cursor color</div>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {[
+                { k: '#B8B0D6', label: 'lavender' },
+                { k: '#0057FF', label: 'electric' },
+                { k: '#0E0E10', label: 'ink' },
+              ].map(c => (
+                <button key={c.k} onClick={() => updateTweak('cursorColor', c.k)} style={{
+                  padding: '5px 10px',
+                  background: tweaks.cursorColor === c.k ? '#0E0E10' : 'transparent',
+                  color: tweaks.cursorColor === c.k ? '#FAFAF7' : '#0E0E10',
+                  border: '1px solid #0E0E10', fontFamily: 'JetBrains Mono', fontSize: 12,
+                  cursor: 'pointer', borderRadius: 0,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <span style={{ display: 'inline-block', width: 10, height: 10, background: c.k, border: '1px solid rgba(0,0,0,0.2)' }} />
+                  {c.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ fontSize: 11, color: '#9A9A9E' }}>
+            both themes are already shown on the canvas. light + dark artboards stay in sync with the library.
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        .kern { --cursor: ${tweaks.cursorColor}; --accent: ${tweaks.cursorColor}; }
+      `}</style>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+
+</body>
+</html>

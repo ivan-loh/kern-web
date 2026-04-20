@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>kern</title>
+<meta name="description" content="A quiet note-taking app.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body data-theme="light">
+
+<div class="kern kd" id="kd" role="application" aria-label="Kern">
+  <aside class="kd-col kd-side" id="sidebar" aria-label="Tags"></aside>
+  <section class="kd-col kd-list" id="list" aria-label="Notes"></section>
+  <main class="kd-col kd-edit" aria-label="Editor">
+    <div class="kd-edit-bar" id="editor-bar"></div>
+    <div class="kd-edit-body" id="editor-body"></div>
+    <aside class="kd-info-panel" id="info-panel" aria-label="Note info" hidden></aside>
+  </main>
+</div>
+
+<script type="module" src="app.js"></script>
+
+</body>
+</html>
