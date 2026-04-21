@@ -168,10 +168,12 @@ function matchBlockMarker(line) {
   if (m) return { marker: m[0], kind: 'ol' };
   m = /^>\s/.exec(line);
   if (m) return { marker: m[0], kind: 'q' };
+  m = /^(---|\*\*\*|___)\s*$/.exec(line);
+  if (m) return { marker: line, kind: 'hr' };
   return null;
 }
 
-const INLINE_RX = /(\*\*[^*\n]+\*\*)|(_[^_\n]+_)|(`[^`\n]+`)|(\[[^\]\n]+\]\([^)\n]+\))|(~~[^~\n]+~~)|((?:^|(?<=\s))#[A-Za-z][\w/]*)/g;
+const INLINE_RX = /(\*\*[^*\n]+\*\*)|(__[^_\n]+__)|((?<![*_])\*[^*\n]+\*(?![*_]))|((?<![*_])_[^_\n]+_(?![*_]))|(`[^`\n]+`)|(!\[[^\]\n]+\]\([^)\n]+\))|(\[[^\]\n]+\]\([^)\n]+\))|(<https?:\/\/[^>\s]+>)|(https?:\/\/[^\s<>()]+)|(~~[^~\n]+~~)|((?:^|(?<=\s))#[A-Za-z][\w/]*)/g;
 
 function mk(cls, text) { const s = document.createElement('span'); s.className = cls; s.textContent = text; return s; }
 function wrapInline(cls, inner, markL, markR) {
@@ -189,17 +191,57 @@ function appendInline(container, text) {
     if (m.index > i) container.appendChild(document.createTextNode(text.slice(i, m.index)));
     const tok = m[0];
     if (m[1]) container.appendChild(wrapInline('kd-b', tok.slice(2, -2), '**', '**'));
-    else if (m[2]) container.appendChild(wrapInline('kd-i', tok.slice(1, -1), '_', '_'));
-    else if (m[3]) container.appendChild(wrapInline('kd-c', tok.slice(1, -1), '`', '`'));
-    else if (m[4]) {
+    else if (m[2]) container.appendChild(wrapInline('kd-b', tok.slice(2, -2), '__', '__'));
+    else if (m[3]) container.appendChild(wrapInline('kd-i', tok.slice(1, -1), '*', '*'));
+    else if (m[4]) container.appendChild(wrapInline('kd-i', tok.slice(1, -1), '_', '_'));
+    else if (m[5]) container.appendChild(wrapInline('kd-c', tok.slice(1, -1), '`', '`'));
+    else if (m[6]) {
+      const im = /!\[([^\]]+)\]\(([^)]+)\)/.exec(tok);
+      container.appendChild(wrapInline('kd-img', im[1], '![', `](${im[2]})`));
+    }
+    else if (m[7]) {
       const lm = /\[([^\]]+)\]\(([^)]+)\)/.exec(tok);
       container.appendChild(wrapInline('kd-l', lm[1], '[', `](${lm[2]})`));
     }
-    else if (m[5]) container.appendChild(wrapInline('kd-strike', tok.slice(2, -2), '~~', '~~'));
-    else if (m[6]) container.appendChild(mk('kd-tag', tok));
+    else if (m[8]) container.appendChild(wrapInline('kd-l kd-l-auto', tok.slice(1, -1), '<', '>'));
+    else if (m[9]) container.appendChild(mk('kd-l kd-l-bare', tok));
+    else if (m[10]) container.appendChild(wrapInline('kd-strike', tok.slice(2, -2), '~~', '~~'));
+    else if (m[11]) container.appendChild(mk('kd-tag', tok));
     i = m.index + tok.length;
   }
   if (i < text.length) container.appendChild(document.createTextNode(text.slice(i)));
+}
+
+function computeFenceMap(lines) {
+  const out = new Array(lines.length).fill(null);
+  let fence = null;
+  let id = 0;
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    if (!fence) {
+      const m = /^(`{3,}|~{3,})\s*(\S*)\s*$/.exec(ln);
+      if (m) { out[i] = { kind: 'open', id }; fence = { char: m[1][0], len: m[1].length }; }
+    } else {
+      const rx = new RegExp('^\\' + fence.char + '{' + fence.len + ',}\\s*$');
+      if (rx.test(ln)) { out[i] = { kind: 'close', id }; fence = null; id++; }
+      else out[i] = { kind: 'body', id };
+    }
+  }
+  return out;
+}
+
+function updateFenceActive(editor) {
+  const fences = editor.querySelectorAll('.kd-line-code-fence');
+  if (!fences.length) return;
+  const clear = () => fences.forEach(el => el.classList.remove('fence-active'));
+  if (document.activeElement !== editor) { clear(); return; }
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) { clear(); return; }
+  let line = sel.getRangeAt(0).endContainer;
+  while (line && line.parentNode !== editor) line = line.parentNode;
+  const activeId = line?.dataset?.fenceId;
+  if (activeId == null) { clear(); return; }
+  fences.forEach(el => el.classList.toggle('fence-active', el.dataset.fenceId === activeId));
 }
 
 // ────────────────────────────────────────────────────────────
@@ -531,10 +573,40 @@ function renderSentences(editor, text, caretOffset) {
     }
   }
 
+  const fenceMap = computeFenceMap(lines);
   const frag = document.createDocumentFragment();
   lines.forEach((lineText, lineIdx) => {
     const lineEl = document.createElement('div');
     let lineCls = 'kd-line';
+    const fm = fenceMap[lineIdx];
+    const fence = fm?.kind;
+
+    if (fence === 'body') {
+      lineEl.className = lineCls + ' kd-line-code';
+      lineEl.dataset.fenceId = String(fm.id);
+      if (lineText) lineEl.appendChild(document.createTextNode(lineText));
+      else lineEl.appendChild(document.createElement('br'));
+      frag.appendChild(lineEl);
+      return;
+    }
+    if (fence === 'open' || fence === 'close') {
+      const prefix = /^(`+|~+)/.exec(lineText)[0];
+      const rest = lineText.slice(prefix.length);
+      const mkSpan = document.createElement('span');
+      mkSpan.className = 'kd-bm kd-bm-code-fence';
+      mkSpan.textContent = prefix;
+      lineEl.appendChild(mkSpan);
+      if (rest) {
+        const langSpan = document.createElement('span');
+        langSpan.className = 'kd-bm-lang';
+        langSpan.textContent = rest;
+        lineEl.appendChild(langSpan);
+      }
+      lineEl.className = lineCls + ' kd-line-code-fence';
+      lineEl.dataset.fenceId = String(fm.id);
+      frag.appendChild(lineEl);
+      return;
+    }
 
     if (!lineText) {
       lineEl.className = lineCls + ' kd-line-blank';
@@ -554,6 +626,7 @@ function renderSentences(editor, text, caretOffset) {
       if (bm.kind === 'h') lineCls += ` kd-line-h${bm.level}`;
       else if (bm.kind === 'q') lineCls += ' kd-line-q';
       else if (bm.kind === 'task' && bm.done) lineCls += ' kd-line-done';
+      else if (bm.kind === 'hr') lineCls += ' kd-line-hr';
     }
 
     const restText = lineText.slice(contentStart);
@@ -579,6 +652,7 @@ function renderSentences(editor, text, caretOffset) {
   });
 
   editor.replaceChildren(frag);
+  updateFenceActive(editor);
 }
 
 // ────────────────────────────────────────────────────────────
@@ -1026,5 +1100,10 @@ renderSidebar();
 renderList();
 renderEditor();
 
+document.addEventListener('selectionchange', () => {
+  const editor = $('.kd-editor');
+  if (editor) updateFenceActive(editor);
+});
+
 // Expose for testing / debugging
-window.__kern = { state };
+window.__kern = { state, render: () => { renderSidebar(); renderList(); renderEditor(); } };

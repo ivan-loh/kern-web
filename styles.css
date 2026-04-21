@@ -479,6 +479,19 @@ button {
 .kd-editor .kd-bm-h { color: var(--accent); }
 .kd-editor .kd-bm-task { letter-spacing: -0.04em; }
 .kd-editor .kd-bm-q { color: var(--fg-2); font-style: italic; }
+/* HR and code-fence markers opt OUT of the hanging gutter — they read better
+   inline with the content frame they introduce. */
+.kd-editor .kd-bm-hr,
+.kd-editor .kd-bm-code-fence {
+  display: inline;
+  width: auto;
+  margin-left: 0;
+  padding-right: 0;
+  text-align: left;
+  color: var(--fg-3);
+}
+.kd-editor .kd-bm-code-fence { font-family: var(--font-mono); }
+.kd-editor .kd-bm-lang { color: var(--fg-3); font-family: var(--font-mono); font-size: 13px; }
 
 /* Heading / quote / done modifiers live on the line div */
 .kd-editor .kd-line-h1 { font-weight: 500; letter-spacing: -0.01em; }
@@ -487,6 +500,26 @@ button {
 .kd-editor .kd-line-h4 { font-weight: 500; }
 .kd-editor .kd-line-q  { color: var(--fg-2); font-style: italic; }
 .kd-editor .kd-line-done { color: var(--fg-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+.kd-editor .kd-line-hr {
+  color: var(--fg-3);
+  margin: 8px 0;
+}
+.kd-editor .kd-line-code,
+.kd-editor .kd-line-code-fence {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  background: color-mix(in srgb, var(--bg-raised) 55%, transparent);
+  border-left: 1px solid var(--rule);
+  padding-left: 8px;
+  margin-left: -8px;
+}
+.kd-editor .kd-line-code { color: var(--fg); }
+.kd-editor .kd-line-code-fence {
+  color: var(--fg-3);
+  opacity: 0.3;
+  transition: opacity var(--dur-fast) var(--ease);
+}
+.kd-editor .kd-line-code-fence.fence-active { opacity: 1; }
 
 /* Inline marks — syntax in dim, content in ink */
 .kd-editor .kd-mk { color: var(--fg-3); }
@@ -503,6 +536,12 @@ button {
 }
 .kd-editor .kd-l { color: var(--fg); }
 .kd-editor .kd-l > :nth-child(2) { border-bottom: 1px solid currentColor; }
+.kd-editor .kd-l-bare,
+.kd-editor .kd-l-auto { color: var(--fg); }
+.kd-editor .kd-l-bare { border-bottom: 1px solid var(--fg-3); }
+.kd-editor .kd-l-auto > :nth-child(2) { border-bottom: 1px solid var(--fg-3); }
+.kd-editor .kd-img { color: var(--fg); }
+.kd-editor .kd-img > :nth-child(2) { border-bottom: 1px dashed var(--fg-3); }
 .kd-editor .kd-strike > :nth-child(2) { text-decoration: line-through; opacity: 0.6; }
 
 /* Empty state */
@@ -755,12 +794,23 @@ button {
   .kd-editor .kd-bm,
   .kd-editor .kd-bm-h,
   .kd-editor .kd-bm-q,
+  .kd-editor .kd-bm-hr,
+  .kd-editor .kd-bm-code-fence,
+  .kd-editor .kd-bm-lang,
   .kd-editor .kd-mk,
   .kd-editor .kd-tag { color: #666 !important; }
   .kd-editor .kd-c {
     background: transparent;
     border: 0.5pt solid #999;
     padding: 0 2px;
+  }
+  .kd-editor .kd-line-hr { margin: 10pt 0; }
+  .kd-editor .kd-line-code,
+  .kd-editor .kd-line-code-fence {
+    background: transparent;
+    border-left: 0.5pt solid #999;
+    page-break-inside: avoid;
+    break-inside: avoid;
   }
   .kd-editor .kd-line-h1 {
     page-break-before: always;
