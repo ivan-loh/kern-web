@@ -1,5 +1,3 @@
-import { SEED_NOTES } from './notes.js';
-
 // ────────────────────────────────────────────────────────────
 // Persistence
 // ────────────────────────────────────────────────────────────
@@ -37,7 +35,7 @@ function savePrefs(p) {
 // ────────────────────────────────────────────────────────────
 const prefs = loadPrefs();
 const state = {
-  notes: loadNotes() || SEED_NOTES,
+  notes: loadNotes() || [],
   selectedId: prefs.selectedId || null,
   selectedTag: prefs.selectedTag || null,
   focus: false,
